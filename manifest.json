@@ -1,0 +1,32 @@
+{
+  "name": "Take Pause Reminder",
+  "version": "1",
+  "author": "Vadagon",
+  "manifest_version": 2,
+  "description": "Control volume and boost volume of any Tab",
+  "permissions": [
+    "tabs",
+    "storage",
+    "<all_urls>"
+  ],
+  "icons": { 
+    "16": "images/icon16.png",
+    "16": "images/icon32.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png" 
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*", "<all_urls>"],
+      "js": ["custom/js/content.js"]
+    }
+  ],
+  "options_page": "options.html",
+  "offline_enabled": true,
+  "externally_connectable": {
+    "matches": ["*://*.volume-manager.org/*"]
+  }
+}
