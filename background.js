@@ -3,8 +3,7 @@
 var d = {
     work: 52 * 60,
     pause: 17 * 60,
-    delay: 5 * 60,
-    events: ['onMoved', 'onHighlighted', 'onReplaced', 'onZoomChange', 'onUpdated', 'onActivated', 'onDetached', 'onAttached', 'onRemoved', 'onCreated']
+    delay: 3 * 60
 }
 
 var time = {
@@ -12,22 +11,6 @@ var time = {
     pauseTabId: !1,
     snooze: !1,
     timing: d.work,
-    delay: function() {
-        time.snooze = !1
-        if (time.delaying)
-            clearTimeout(time.delaying)
-        time.delaying = setTimeout(function() {
-            if (time.workTime) {
-                time.snooze = !0
-                time.workTime = !1
-                console.log('work stopped', time.snooze)
-                time.timing = !1
-                time.setBadge()
-            } else if (!time.snooze) {
-                time.delay()
-            }
-        }, d.delay * 1000);
-    },
     working: function() {
         if (time.timer)
             clearTimeout(time.timer)
@@ -40,20 +23,16 @@ var time = {
     },
     pausing: function() {
         clearTimeout(time.timer)
-        chrome.tabs.create({ 'url': chrome.extension.getURL('options.html') }, function(tab) { time.pauseTabId = tab.id });
+        chrome.tabs.create({ 'url': chrome.extension.getURL('timer.html') }, function(tab) { time.pauseTabId = tab.id });
         time.workTime = !1
         time.timing = d.pause
         time.setBadge()
     },
     setBadge: function() {
         chrome.browserAction.setIcon({ path: 'images/' + (time.workTime ? 'play' : (time.snooze ? 'stop' : 'pause')) + '.png' })
-    },
-    init: function(e = !1) {
-        time.delay()
-        time.workTime = !e
-        time.workTime ? time.working() : time.pausing()
-
-        setInterval(function() {
+        if (time.badGeTime)
+            clearTimeout(time.badGeTime)
+        time.badGeTime = setInterval(function() {
             if (!time.timing || time.timing < 0) {
                 chrome.browserAction.setBadgeText({ text: '' })
             } else {
@@ -62,23 +41,31 @@ var time = {
                 chrome.browserAction.setBadgeText({ text: time2Show })
             }
         }, 1000);
+    },
+    setItUp: function(){
+        chrome.idle.setDetectionInterval(d.delay)
+        chrome.browserAction.setBadgeBackgroundColor({color: '#404040'})
+    },
+    init: function(e = !1) {
+        time.workTime = !e
+        time.snooze = false
+        time.workTime ? time.working() : time.pausing()
     }
 }
 
-time.init();
+time.init()
+time.setItUp()
 
-// reset delay events
-d.events.forEach(function(el) {
-    chrome.tabs[el].addListener((id) => {
-        console.log(time.snooze)
-        if ((el == 'onRemoved' && time.pauseTabId == id) || time.snooze) {
-            time.init()
-        } else {
-            time.delay()
-        }
-    })
-});
-// The end of delay events
+chrome.idle.onStateChanged.addListener(function(e){
+    if(e != 'active'){
+        time.snooze = !0
+        time.workTime = !1
+        time.setBadge()
+        clearTimeout(time.timer)
+    }else{
+        time.init()
+    }
+})
 
 chrome.browserAction.onClicked.addListener(function(tab) {
     if (time.workTime) {

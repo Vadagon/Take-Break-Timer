@@ -1,19 +1,20 @@
 {
-  "name": "Take Pause Reminder",
-  "version": "1",
+  "name": "Take a Break Reminder",
+  "version": "1.1",
   "author": "Vadagon",
   "manifest_version": 2,
-  "description": "Control volume and boost volume of any Tab",
+  "description": "Smartly reminds when you should to take a break",
   "permissions": [
-    "tabs",
     "storage",
-    "<all_urls>"
+    "alarms",
+    "notifications",
+    "idle"
   ],
   "browser_action": {
     "default_icon": {
       "128": "images/pause.png"
     },
-    "default_title": "Take Pause Reminder"
+    "default_title": "Start a Break/Work"
   },
   "background": {
     "scripts": ["background.js"]
@@ -29,6 +30,7 @@
   ],
   "options_page": "options.html",
   "offline_enabled": true,
+  "minimum_chrome_version": "32",
   "externally_connectable": {
     "matches": ["*://*.volume-manager.org/*"]
   }
