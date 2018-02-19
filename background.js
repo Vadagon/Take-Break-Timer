@@ -1,43 +1,43 @@
 'use strict'
 
 var d = {
-    work: 52 * 60,
+    work: 0.3 * 60,
     pause: 17 * 60,
-    delay: 3 * 60
+    delay: 0.4 * 60
 }
 
-var time = {
+var t = {
     workTime: !0,
     pauseTabId: !1,
     snooze: !1,
     timing: d.work,
     working: function() {
-        if (time.timer)
-            clearTimeout(time.timer)
-        time.timer = setTimeout(function() {
-            time.pausing()
+        if (t.timer)
+            clearTimeout(t.timer)
+        t.timer = setTimeout(function() {
+            t.pausing()
         }, d.work * 1000);
-        time.workTime = !0
-        time.timing = d.work
-        time.setBadge()
+        t.workTime = !0
+        t.timing = d.work
+        t.setBadge()
     },
     pausing: function() {
-        clearTimeout(time.timer)
-        chrome.tabs.create({ 'url': chrome.extension.getURL('timer.html') }, function(tab) { time.pauseTabId = tab.id });
-        time.workTime = !1
-        time.timing = d.pause
-        time.setBadge()
+        clearTimeout(t.timer)
+        chrome.tabs.create({ 'url': chrome.extension.getURL('timer.html') }, function(tab) { t.pauseTabId = tab.id });
+        t.workTime = !1
+        t.timing = d.pause
+        t.setBadge()
     },
     setBadge: function() {
-        chrome.browserAction.setIcon({ path: 'images/' + (time.workTime ? 'play' : (time.snooze ? 'stop' : 'pause')) + '.png' })
-        if (time.badGeTime)
-            clearTimeout(time.badGeTime)
-        time.badGeTime = setInterval(function() {
-            if (!time.timing || time.timing < 0) {
+        chrome.browserAction.setIcon({ path: 'images/' + (t.workTime ? (t.snooze ? 'stop' : 'play') : 'pause') + '.png' })
+        if (t.badGeTime)
+            clearTimeout(t.badGeTime)
+        t.badGeTime = setInterval(function() {
+            if (!t.timing || t.timing < 0 || t.snooze) {
                 chrome.browserAction.setBadgeText({ text: '' })
             } else {
-                time.timing--;
-                var time2Show = Math.round(time.timing / 60).toString()
+                t.timing--;
+                var time2Show = Math.round(t.timing / 60).toString()
                 chrome.browserAction.setBadgeText({ text: time2Show })
             }
         }, 1000);
@@ -47,31 +47,43 @@ var time = {
         chrome.browserAction.setBadgeBackgroundColor({color: '#404040'})
     },
     init: function(e = !1) {
-        time.workTime = !e
-        time.snooze = false
-        time.workTime ? time.working() : time.pausing()
+        t.workTime = !e
+        t.snooze = false
+        t.workTime ? t.working() : t.pausing()
     }
 }
 
-time.init()
-time.setItUp()
+t.setItUp()
+t.init()
 
 chrome.idle.onStateChanged.addListener(function(e){
     if(e != 'active'){
-        time.snooze = !0
-        time.workTime = !1
-        time.setBadge()
-        clearTimeout(time.timer)
+        t.snooze = !0
+        t.workTime = !0
+        t.setBadge()
+        clearTimeout(t.timer)
+    }else if(t.workTime){
+        t.init()
     }else{
-        time.init()
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'images/pause.png',
+            title: 'Don\'t do this!',
+            message: 'Please! Release your mouse and relax 😠'
+        })
     }
 })
 
+chrome.tabs.onRemoved.addListener((id) => {
+    if (t.pauseTabId == id)
+        t.init()
+})
+
 chrome.browserAction.onClicked.addListener(function(tab) {
-    if (time.workTime) {
-        time.init(true)
+    if (t.workTime) {
+        t.init(true)
     } else {
-        time.init()
-        chrome.tabs.remove(time.pauseTabId)
+        t.init()
+        chrome.tabs.remove(t.pauseTabId)
     }
 });
