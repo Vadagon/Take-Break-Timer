@@ -1,19 +1,26 @@
 'use strict'
 
 var d = {
-    work: 0.3 * 60,
+    work: 52 * 60,
     pause: 17 * 60,
-    delay: 0.4 * 60
+    delay: 4 * 60
 }
 
 var t = {
     workTime: !0,
     pauseTabId: !1,
+    pauseWinId: !1,
     snooze: !1,
     timing: d.work,
     working: function() {
         if (t.timer)
             clearTimeout(t.timer)
+        if(t.pauseTabId)
+            chrome.tabs.remove(t.pauseTabId)
+        if(t.pauseWinId)
+            chrome.windows.remove(t.pauseWinId, function(){
+                t.pauseWinId = !1
+            })
         t.timer = setTimeout(function() {
             t.pausing()
         }, d.work * 1000);
@@ -23,7 +30,16 @@ var t = {
     },
     pausing: function() {
         clearTimeout(t.timer)
-        chrome.tabs.create({ 'url': chrome.extension.getURL('timer.html') }, function(tab) { t.pauseTabId = tab.id });
+        
+        chrome.windows.getCurrent(function(e){
+            if(!e){
+                chrome.windows.create({'url': chrome.extension.getURL('timer.html'), focused: !0, type: 'popup'}, function(win) { 
+                    t.pauseWinId = win.id
+                })
+            }else{
+                chrome.tabs.create({ 'url': chrome.extension.getURL('timer.html') }, function(tab) { t.pauseTabId = tab.id });
+            }
+        })
         t.workTime = !1
         t.timing = d.pause
         t.setBadge()
@@ -78,12 +94,17 @@ chrome.tabs.onRemoved.addListener((id) => {
     if (t.pauseTabId == id)
         t.init()
 })
+chrome.windows.onRemoved.addListener((id) => {
+    if (t.pauseWinId == id){
+        t.init()
+        t.pauseWinId = !1
+    }
+})
 
 chrome.browserAction.onClicked.addListener(function(tab) {
     if (t.workTime) {
         t.init(true)
     } else {
         t.init()
-        chrome.tabs.remove(t.pauseTabId)
     }
 });
