@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="custom/css/popup.css">
+    <script type="text/javascript" src="custom/js/angular.js"></script>
+    <script type="text/javascript" src="custom/js/popup.js"></script>
+</head>
+
+<body ng-app="app" ng-controller="ctrl">
+    <div class="container">
+    	<h1>Take a Break Reminder</h1>
+        <a href="#" class="button start" ng-click="do(1)">Start over</a>
+        <a href="#" class="button pause" ng-click="do(2)">Pause</a>
+        <div id="toggles">
+            <input type="checkbox" name="checkbox1" id="checkbox1" class="ios-toggle" ng-model="swither" ng-change="swithing"/>
+            <label for="checkbox1" class="checkbox-label" data-off="disabled" data-on="enabled"></label>
+        </div>
+    </div>
+</body>
+
+</html>

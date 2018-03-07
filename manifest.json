@@ -1,6 +1,6 @@
 {
     "name": "Take a Break Reminder",
-    "version": "2",
+    "version": "2.21",
     "author": "Vadagon",
     "manifest_version": 2,
     "description": "Smartly reminds when you should to take a break",
@@ -20,10 +20,11 @@
             "40": "images/40.png",
             "128": "images/pause.png"
         },
-        "default_title": "Start a Break/Work"
+        "default_title": "Start a Break/Work",
+        "default_popup": "popup.html"
     },
     "background": {
-        "scripts": ["background.js"],
+        "scripts": ["background.js", "custom/js/plugins.js"],
         "persistent": true
     },
     "icons": {
@@ -34,12 +35,11 @@
         "128": "images/pause.png"
     },
     "web_accessible_resources": [
-        "images/*"
+        "images/*",
+        "custom/*",
+        "sounds/*"
     ],
     "options_page": "options.html",
     "offline_enabled": true,
-    "minimum_chrome_version": "32",
-    "externally_connectable": {
-        "matches": ["*://*.volume-manager.org/*"]
-    }
+    "minimum_chrome_version": "50"
 }
