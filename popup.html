@@ -5,17 +5,36 @@
     <link rel="stylesheet" type="text/css" href="custom/css/popup.css">
     <script type="text/javascript" src="custom/js/angular.js"></script>
     <script type="text/javascript" src="custom/js/popup.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
 </head>
 
 <body ng-app="app" ng-controller="ctrl">
-    <div class="container">
+    <div class="container z-1" ng-style="{'visibility': tab.settings ? 'visible' : 'hidden'}">
+        <span class="menuItem" ng-click="tab.settings=!1"><i class="material-icons">settings</i></span>
     	<h1>Take a Break Reminder</h1>
         <a href="#" class="button start" ng-click="do(1)">Start over</a>
         <a href="#" class="button pause" ng-click="do(2)">Pause</a>
         <div id="toggles">
-            <input type="checkbox" name="checkbox1" id="checkbox1" class="ios-toggle" ng-model="swither" ng-change="swithing"/>
+            <input type="checkbox" name="checkbox1" id="checkbox1" class="ios-toggle" ng-model="swither" ng-change="switching()"/>
             <label for="checkbox1" class="checkbox-label" data-off="disabled" data-on="enabled"></label>
         </div>
+    </div>
+    <div class="container z-2 settings"  ng-style="{'visibility': !tab.settings ? 'visible' : 'hidden'}">
+        <span class="menuItem" ng-click="tab.settings=!0"><i class="material-icons">close</i></span>
+        <h1>Settings</h1>
+        <br>
+        <div class="formGroup">
+            <div class="one-half">
+                <label>Work time</label>
+                <input type="number" name="" ng-model="d.work">
+            </div>
+            <div class="one-half">
+                <label>Pause time</label>
+                <input type="number" name="" ng-model="d.pause">
+            </div>
+        </div>
+        <a href="#" class="button start" style="position: absolute; bottom: 10px; width: calc(100% - 40px); top: auto;" ng-click="do(11, $event)">Save</a>
     </div>
 </body>
 

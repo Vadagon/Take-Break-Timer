@@ -4,16 +4,7 @@ var d = {
     work: 52 * 60,
     pause: 17 * 60,
     delay: 4 * 60,
-    sound: !1,
-    setItAllUp: function(){
-        chrome.idle.setDetectionInterval(d.delay)
-        chrome.browserAction.setBadgeBackgroundColor({color: '#404040'})
-        window.onload = function(){
-            d.sound = new Howl({
-              src: ['sounds/def1.mp3']
-            });
-        };
-    }
+    sound: !1
 }
 
 var t = {
@@ -32,12 +23,21 @@ var t = {
                 t.pauseWinId = !1
             })
         t.timer = setTimeout(function() {
-            d.sound.play();
+            t.sound.play();
             t.notify(2)
         }, e * 1000);
         t.workTime = !0
         t.timing = e
         t.setBadge()
+    },
+    setItAllUp: function(){
+        chrome.idle.setDetectionInterval(d.delay)
+        chrome.browserAction.setBadgeBackgroundColor({color: '#404040'})
+        window.onload = function(){
+            t.sound = new Howl({
+              src: ['sounds/def1.mp3']
+            });
+        };
     },
     snooze: function(){
         t.snoozing = !0
@@ -63,7 +63,12 @@ var t = {
                 requireInteraction: !0
             }, function(id){
                 t.workTime = !1
-                t.setBadge(!0)
+                var i = 0;
+                t.stopAll()
+                t.badgeTime = setInterval(function() {
+                    i++;
+                    i%2?t.setIcon('pause'):t.setIcon('pause.sm')
+                }, 1000);
                 chrome.notifications.onButtonClicked.addListener(function(iid, btnId){
                     if(id == iid && btnId == 0)
                         t.init(!0)
@@ -82,25 +87,22 @@ var t = {
                 chrome.tabs.create({ 'url': chrome.extension.getURL('timer.html') }, function(tab) { t.pauseTabId = tab.id });
             }
         })
+        chrome.power.requestKeepAwake("display")
         t.workTime = !1
+        t.stopAll()
         t.timing = d.pause
         t.setBadge()
     },
     setIcon: function(e = !1){
         var icon = (t.workTime ? (t.snoozing ? 'stop' : 'play') : 'pause')
         icon = e?e:icon
-        console.log(icon)
         chrome.browserAction.setIcon({ path: 'images/' + icon + '.png' })
     },
     setBadge: function(e = !1) {
-        t.setIcon()
+        t.setIcon(e)
         if (t.badgeTime)
             clearInterval(t.badgeTime)
-        var i = 0;
         t.badgeTime = setInterval(function() {
-            i++;
-            if(e)
-                i%2?t.setIcon('pause'):t.setIcon('pause.sm')
             if (!t.timing || t.timing < 0 || t.snoozing) {
                 chrome.browserAction.setBadgeText({ text: '' })
             } else {
@@ -114,11 +116,14 @@ var t = {
             }
         }, 1000);
     },
-    terminate: function(){
+    stopAll: function(){
         if (t.timer)
             clearTimeout(t.timer)
         if (t.badgeTime)
             clearInterval(t.badgeTime)
+    },
+    terminate: function(){
+        t.stopAll()
         t.workTime = false
         t.snoozing = false
         chrome.browserAction.setBadgeText({ text: '' })
@@ -126,51 +131,73 @@ var t = {
         t.terminated = !0
     },
     init: function(e = !1, c = !1) {
-        if (t.timer)
-            clearTimeout(t.timer)
-
+        console.log('Initiated somehow...')
+        t.stopAll()
+        if(t.terminated){
+            t.terminate()
+            return;
+        }
         t.workTime = !e
-        t.terminated = t.snoozing = false
+        t.snoozing = false
         !c?c = d.work:c
         t.workTime ? t.work(c) : t.pause()
     }
 }
 
-d.setItAllUp()
 sGet((e)=>{
-    !e?t.init():t.terminate()
+    console.log(e)
+    if(typeof e == 'object'){
+        t.terminated = e.terminated
+        d = e.d
+    }
+    t.setItAllUp()
+    !t.terminated?t.init():t.terminate()
     sSet()
 })
 
 
 
 chrome.runtime.onMessage.addListener(function(e){
-    if(e.c==1)
+    console.log('pressed:', e)
+    if(e.c==1){
+        t.terminated = !1;
         t.init()
-    if(e.c==2)
+    }
+    if(e.c==2){
+        t.pause()
         t.init(!0)
+    }
     if(e.c==3)
         t.terminate()
+    if(e.c==11){
+        d = e.d
+        t.setItAllUp()
+        t.init()
+    }
     sSet()
 })
 chrome.idle.onStateChanged.addListener(function(e){
     if(e != 'active'){
-        if(!t.workTime)
+        if(t.workTime)
             t.snooze()
     }else if(t.workTime){
         t.init()
     }else{
-        t.notify(1)
+        // t.notify(1)
     }
 })
 chrome.tabs.onRemoved.addListener((id) => {
-    if (t.pauseTabId == id)
+    if (t.pauseTabId == id){
+        t.pauseTabId = !1
         t.init()
+        chrome.power.releaseKeepAwake()
+    }
 })
 chrome.windows.onRemoved.addListener((id) => {
     if (t.pauseWinId == id){
         t.init()
         t.pauseWinId = !1
+        chrome.power.releaseKeepAwake()
     }
 })
 function sGet(callback){
@@ -179,5 +206,5 @@ function sGet(callback){
     })
 }
 function sSet(){
-    chrome.storage.local.set({data: t.terminated})
+    chrome.storage.local.set({data: {terminated: t.terminated, d: d}})
 }
