@@ -124,3 +124,11 @@ body {
   float: left;
   line-height: 11px;
 }
+a{
+  color: white;
+  cursor: pointer !important;
+  text-decoration: none;
+}
+a:hover{
+  text-decoration: underline;
+}

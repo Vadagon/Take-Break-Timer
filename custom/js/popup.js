@@ -13,16 +13,16 @@ app.controller('ctrl', function($scope) {
 		$scope.d = e.d;
 		$scope.d = d(1/60)
 		$scope.swither = !e.terminated;
-		$scope.$apply()
+		$scope.$apply();
 		$scope.switching = function(){
-			$scope.swither?$scope.do(1):$scope.do(3)
+			$scope.swither?$scope.do(1):$scope.do(3);
 		}
 	})
 	
     $scope.do = function(e, event){
-    	console.log(d())
-    	if(e==1)
+    	if(e==1){
     		$scope.swither = !0
+    	}
     	if(e==11){
     		event.target.textContent = 'Saved!'
     		sSet()

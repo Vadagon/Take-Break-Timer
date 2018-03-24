@@ -25,7 +25,7 @@
         "default_popup": "popup.html"
     },
     "background": {
-        "scripts": ["background.js", "custom/js/plugins.js"],
+        "scripts": ["custom/js/plugins.js", "background.js"],
         "persistent": true
     },
     "icons": {

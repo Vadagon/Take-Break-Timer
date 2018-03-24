@@ -33,11 +33,9 @@ var t = {
     setItAllUp: function(){
         chrome.idle.setDetectionInterval(d.delay)
         chrome.browserAction.setBadgeBackgroundColor({color: '#404040'})
-        window.onload = function(){
-            t.sound = new Howl({
-              src: ['sounds/def1.mp3']
-            });
-        };
+        t.sound = new Howl({
+          src: ['sounds/def1.mp3']
+        });
     },
     snooze: function(){
         t.snoozing = !0
@@ -164,7 +162,6 @@ chrome.runtime.onMessage.addListener(function(e){
         t.init()
     }
     if(e.c==2){
-        t.pause()
         t.init(!0)
     }
     if(e.c==3)
