@@ -3,39 +3,55 @@
 
 <head>
     <link rel="stylesheet" type="text/css" href="custom/css/popup.css">
+    <link rel="stylesheet" type="text/css" href="custom/css/icons/dist/material-design-icons.css">
     <script type="text/javascript" src="custom/js/angular.js"></script>
     <script type="text/javascript" src="custom/js/popup.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
 </head>
 
 <body ng-app="app" ng-controller="ctrl">
     <div class="container z-1" ng-style="{'visibility': tab.settings ? 'visible' : 'hidden'}">
         <span class="menuItem" ng-click="tab.settings=!1"><i class="material-icons">settings</i></span>
-    	<h1>Take a Break Reminder</h1>
-        <a href="#" class="button start" ng-click="do(1)">Start over</a>
-        <a href="#" class="button pause" ng-click="do(2)">Pause</a>
+    	<h1> Take a Break <br> Timer </h1>
+
+        <div class="mainButtons">
+            <input type="number" name="" ng-model="d.work">
+            <a href="#" class="button start" ng-click="do(1)">Start over</a>
+            <input type="number" name="" ng-model="d.pause">
+            <a href="#" class="button pause" ng-click="do(2)">Pause</a>
+        </div>
+
         <div id="toggles">
-            <input type="checkbox" name="checkbox1" id="checkbox1" class="ios-toggle" ng-model="swither" ng-checked="switching()"/>
-            <label for="checkbox1" class="checkbox-label" data-off="disabled" data-on="enabled"></label>
+            <input type="checkbox" name="checkbox1" id="checkbox1" class="ios-toggle" ng-model="swither" ng-change="switching()"/>
+            <label for="checkbox1" class="checkbox-label" data-off="safe" data-on="work"></label>
         </div>
     </div>
     <div class="container z-2 settings"  ng-style="{'visibility': !tab.settings ? 'visible' : 'hidden'}">
         <span class="menuItem" ng-click="tab.settings=!0"><i class="material-icons">close</i></span>
         <h1>Settings</h1>
-        <br>
         <div class="formGroup">
+            <h2>Work Mode</h2>
             <div class="one-half">
                 <label>Work time</label>
-                <input type="number" name="" ng-model="d.work">
+                <input type="number" name="" ng-model="d.workMode.work">
             </div>
             <div class="one-half">
                 <label>Pause time</label>
-                <input type="number" name="" ng-model="d.pause">
+                <input type="number" name="" ng-model="d.workMode.pause">
+            </div>
+        </div>
+        <br>
+        <div class="formGroup">
+            <h2>Safe Mode</h2>
+            <div class="one-half">
+                <label>Safe time</label>
+                <input type="number" name="" ng-model="d.safeMode.work">
+            </div>
+            <div class="one-half">
+                <label>Pause time</label>
+                <input type="number" name="" ng-model="d.safeMode.pause">
             </div>
         </div>
         <a href="#" class="button start" style="position: absolute; bottom: 10px; width: calc(100% - 40px); top: auto;" ng-click="do(11, $event)">Save</a>
     </div>
 </body>
-
 </html>

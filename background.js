@@ -1,10 +1,16 @@
-'use strict'
-
 var d = {
-    work: 52 * 60,
-    pause: 17 * 60,
-    delay: 4 * 60,
-    sound: !1
+    work: 25 * 60,
+    pause: 5 * 60,
+    sound: !1,
+    isSafe: false,
+    workMode: {
+        work: 25 * 60,
+        pause: 5 * 60
+    },
+    safeMode: {
+        work: 52 * 60,
+        pause: 17 * 60
+    }
 }
 
 var t = {
@@ -15,6 +21,7 @@ var t = {
     snoozing: !1,
     timing: d.work,
     timer: !1,
+    state: 'active',
     work: function(e) {
         if(t.pauseTabId)
             chrome.tabs.remove(t.pauseTabId)
@@ -22,16 +29,17 @@ var t = {
             chrome.windows.remove(t.pauseWinId, function(){
                 t.pauseWinId = !1
             })
-        t.timer = setTimeout(function() {
-            t.sound.play();
-            t.notify(2)
-        }, e * 1000);
+        t.timer = setTimeout(t.timeIsUp, e * 1000);
         t.workTime = !0
         t.timing = e
         t.setBadge()
     },
+    timeIsUp: function(){
+        t.sound.play();
+        t.notify(2)
+    },
     setItAllUp: function(){
-        chrome.idle.setDetectionInterval(d.delay)
+        chrome.idle.setDetectionInterval(d.pause)
         chrome.browserAction.setBadgeBackgroundColor({color: '#404040'})
         t.sound = new Howl({
           src: ['sounds/def1.mp3']
@@ -51,22 +59,19 @@ var t = {
                 title: 'Don\'t do this!',
                 message: 'Please! Release your mouse and relax 😠'
             })
-        if(e == 2)
+        if(e == 2){
+            // break Time
+            t.workTime = !1
+            t.stopAll()
+
             chrome.notifications.create({
                 type: 'basic',
                 iconUrl: 'images/pause.png',
-                title: 'Don\'t do this!',
+                title: 'Coffee Time',
                 message: 'It\'s time for a break!',
                 buttons: [{title: 'Take a break!'}, {title: 'Additional 5 min.'}],
                 requireInteraction: !0
             }, function(id){
-                t.workTime = !1
-                var i = 0;
-                t.stopAll()
-                t.badgeTime = setInterval(function() {
-                    i++;
-                    i%2?t.setIcon('pause'):t.setIcon('pause.sm')
-                }, 1000);
                 chrome.notifications.onButtonClicked.addListener(function(iid, btnId){
                     if(id == iid && btnId == 0)
                         t.init(!0)
@@ -74,8 +79,23 @@ var t = {
                         t.init(!1, 300)
                 })
             })
+
+            var i = 0;
+            var reInitWorkAfter = d.pause;
+            t.badgeTime = setInterval(function() {
+                i++;
+                i%2?t.setIcon('pause'):t.setIcon('pause.sm')
+
+                // reinit workflow after pause is exceeded
+                reInitWorkAfter--;
+                if(reInitWorkAfter <= 0){
+                    if(t.state == 'active') t.init()
+                    if(t.state != 'active') t.snooze()
+                }
+            }, 1000);
+        }
     },
-    pause: function() {
+    pause: function(e) {
         chrome.windows.getCurrent(function(e){
             if(!e){
                 chrome.windows.create({'url': chrome.extension.getURL('timer.html'), focused: !0, type: 'popup'}, function(win) { 
@@ -88,7 +108,8 @@ var t = {
         chrome.power.requestKeepAwake("display")
         t.workTime = !1
         t.stopAll()
-        t.timing = d.pause
+        if(e) t.timing = e
+        else t.timing = d.pause
         t.setBadge()
     },
     setIcon: function(e = !1){
@@ -127,9 +148,20 @@ var t = {
         chrome.browserAction.setBadgeText({ text: '' })
         t.setIcon('stop')
         t.terminated = !0
+
+        if(t.pauseTabId)
+            chrome.tabs.remove(t.pauseTabId)
+        if(t.pauseWinId)
+            chrome.windows.remove(t.pauseWinId, function(){
+                t.pauseWinId = !1
+            })
     },
     init: function(e = !1, c = !1) {
         console.log('Initiated somehow...')
+        // applying mode type
+        d.work = d.isSafe?d.safeMode.work:d.workMode.work;
+        d.pause = d.isSafe?d.safeMode.pause:d.workMode.pause;
+        // stopping all intervals/outs
         t.stopAll()
         if(t.terminated){
             t.terminate()
@@ -137,8 +169,8 @@ var t = {
         }
         t.workTime = !e
         t.snoozing = false
-        !c?c = d.work:c
-        t.workTime ? t.work(c) : t.pause()
+        if(!c) c = t.workTime?d.work:d.pause;
+        t.workTime ? t.work(c) : t.pause(c)
     }
 }
 
@@ -146,6 +178,10 @@ sGet((e)=>{
     console.log(e)
     if(typeof e == 'object'){
         t.terminated = e.terminated
+        if(!e.d.workMode){
+            e.d.workMode = d.workMode; 
+            e.d.safeMode = d.safeMode; 
+        }
         d = e.d
     }
     t.setItAllUp()
@@ -159,13 +195,20 @@ chrome.runtime.onMessage.addListener(function(e){
     console.log('pressed:', e)
     if(e.c==1){
         t.terminated = !1;
-        t.init()
+        t.init(!1, e.d.work);
     }
     if(e.c==2){
-        t.init(!0)
+        t.terminated = !1;
+        t.init(!0, e.d.pause);
     }
     if(e.c==3)
         t.terminate()
+    
+    if(e.c >= 5 && e.c <= 6){
+        if(e.c == 5) d.isSafe = false;
+        if(e.c == 6) d.isSafe = true;
+        t.init()
+    }
     if(e.c==11){
         d = e.d
         t.setItAllUp()
@@ -174,13 +217,13 @@ chrome.runtime.onMessage.addListener(function(e){
     sSet()
 })
 chrome.idle.onStateChanged.addListener(function(e){
+    console.log('idle.onStateChanged: ', e)
+    t.state = e;
     if(e != 'active'){
         if(t.workTime)
             t.snooze()
-    }else if(t.workTime){
-        t.init()
     }else{
-        // t.notify(1)
+        t.init()
     }
 })
 chrome.tabs.onRemoved.addListener((id) => {
@@ -205,3 +248,6 @@ function sGet(callback){
 function sSet(){
     chrome.storage.local.set({data: {terminated: t.terminated, d: d}})
 }
+chrome.runtime.setUninstallURL('https://forms.gle/UU6mqqYNLT2Q1ZnMA')
+
+

@@ -38,8 +38,10 @@ body {
     z-index: 2;
 }
 
+
+
 h1 {
-    margin: 25px auto 10px auto;
+    margin: 15px auto 10px auto;
     text-align: center;
     font-weight: 200;
     color: #4b4b4b;
@@ -255,6 +257,31 @@ a.button:active {
     top: 0.1em;
     box-shadow: none;
 }
+
+
+.mainButtons input{
+    float: left;
+    width: 35px;
+    padding: 8px 0 7px 2px;
+    font-weight: bold;
+    border: 0;
+    border-bottom: 3px solid #b1b1b1;
+    border-radius: 3px 0 0 3px;
+    margin-left: 16px;
+    display: inline-block;
+    text-align: center;
+
+}
+.mainButtons input::-webkit-outer-spin-button,
+.mainButtons input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.mainButtons a{
+    width: 125px;
+    margin-left: 50px;
+}
+
 
 .menuItem {
     position: absolute;
