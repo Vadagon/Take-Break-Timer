@@ -191,7 +191,7 @@ sGet((e)=>{
 
 
 
-chrome.runtime.onMessage.addListener(function(e){
+chrome.runtime.onMessage.addListener(function(e, sender, sendResponse){
     console.log('pressed:', e)
     if(e.c==1){
         t.terminated = !1;
@@ -213,6 +213,9 @@ chrome.runtime.onMessage.addListener(function(e){
         d = e.d
         t.setItAllUp()
         t.init()
+    }
+    if(e.type=='getTime'){
+        sendResponse(t.timing)
     }
     sSet()
 })

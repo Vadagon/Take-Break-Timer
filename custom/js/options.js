@@ -1,6 +1,13 @@
 TweenLite.defaultEase = Expo.easeOut;
 
-initTimer("17:00"); // other ways --> "0:15" "03:5" "5:2"
+chrome.runtime.sendMessage({type: "getTime"}, function(response) {
+  console.log(response)
+  // initTimer("17:00");
+  var mins = Math.floor(response/60)
+  var secs = response-mins*60-1
+  console.log(mins, secs)
+  initTimer(mins+':'+secs);
+});
 
 var reloadBtn = document.querySelector('.reload');
 var timerEl = document.querySelector('.timer');
