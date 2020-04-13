@@ -1,9 +1,9 @@
 {
-    "name": "Take a Break Reminder",
+    "name": "Timender - AI productivity Manager",
     "version": "3",
     "author": "Vadagon",
     "manifest_version": 2,
-    "description": "Smartly reminds when you should to take a break",
+    "description": "Smartly reminds you when to take a break.",
     "permissions": [
         "storage",
         "notifications",
@@ -21,7 +21,7 @@
             "40": "images/40.png",
             "128": "images/pause.png"
         },
-        "default_title": "Start a Break/Work",
+        "default_title": "Timender",
         "default_popup": "popup.html"
     },
     "background": {
