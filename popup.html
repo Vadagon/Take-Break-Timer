@@ -11,11 +11,11 @@
 <body ng-app="app" ng-controller="ctrl">
     <div class="container z-1" ng-style="{'visibility': tab.settings ? 'visible' : 'hidden'}">
         <span class="menuItem" ng-click="tab.settings=!1"><i class="material-icons">settings</i></span>
-    	<h1> Take a Break <br> Timer </h1>
-
+    	<h1> SmarTime </h1>
+        <br>
         <div class="mainButtons">
             <input type="number" name="" ng-model="d.work">
-            <a href="#" class="button start" ng-click="do(1)">Start over</a>
+            <a href="#" class="button start" ng-class="{'green': d.isSafe}" ng-click="do(1)">Start over</a>
             <input type="number" name="" ng-model="d.pause">
             <a href="#" class="button pause" ng-click="do(2)">Pause</a>
         </div>

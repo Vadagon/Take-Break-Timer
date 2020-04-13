@@ -20,7 +20,7 @@ app.controller('ctrl', function($scope) {
 	sGet('data', (e)=>{
 		$scope.d = e.d;
 		$scope.d = d(1/60)
-		$scope.swither = !e.terminated;
+		$scope.swither = !e.d.isSafe;
 		$scope.$apply();
 		$scope.switching = function(){
 			console.log(12)
